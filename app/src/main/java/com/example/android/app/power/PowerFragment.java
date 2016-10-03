@@ -111,24 +111,7 @@ public class PowerFragment extends Fragment {
             return recordsFound;
         }
 
-        @Override
-        protected void onProgressUpdate(String... values) {
-            if(values.length==0){
-                Log.i(LOG_TAG, "No data downloaded");
-            }
-            if(values.length==5){
-                String type = values[0];
-                String ic = values[1];
-                String data = values[2];
-                String val = values[3];
-                String pct = values[4];
 
-                //Log it.
-                Log.i(LOG_TAG, "Type: " + type + ", IC: " + ic + ", Value: " + val + ", Percentage: " + pct + ", Data: " + data);
-
-            }
-            super.onProgressUpdate(values);
-        }
 
         private XmlPullParser tryDownloadingXmlData(){
             try{
@@ -176,7 +159,8 @@ public class PowerFragment extends Fragment {
             while (eventType != XmlResourceParser.END_DOCUMENT){
                 String tagName = xmlData.getName();
 
-                Log.i(LOG_TAG, "" + tagName);
+                //Log.i(LOG_TAG, "" + tagName);
+                //Log.i(LOG_TAG, "xmlData is: " + xmlData);
 
 
                 switch (eventType){
@@ -227,5 +211,42 @@ public class PowerFragment extends Fragment {
 
             return recordsFound;
         }
+
+        @Override
+        protected void onProgressUpdate(String... values) {
+            if(values.length==0){
+                Log.i(LOG_TAG, "No data downloaded");
+            }
+            if(values.length==5){
+                String type = values[0];
+                String ic = values[1];
+                String data = values[2];
+                String val = values[3];
+                String pct = values[4];
+
+                //Log it.
+                Log.i(LOG_TAG, "Type: " + type + ", IC: " + ic + ", Value: " + val + ", Percentage: " + pct + ", Data: " + data);
+
+                //Pass it to the application.
+                handleNewRecord(type, pct);
+
+            }
+            super.onProgressUpdate(values);
+        }
+
+        private void handleNewRecord(String type, String pct){
+            String message = type + ": " + pct;
+            mForecastAdapter.clear();
+            mForecastAdapter.add(message);
+            Log.i(LOG_TAG, "This code ran" + message);
+        }
+
+
+
+
+
+
+
+
     }
 }
