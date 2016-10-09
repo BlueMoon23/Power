@@ -1,5 +1,6 @@
 package com.example.android.app.power;
 
+import android.content.Intent;
 import android.content.res.XmlResourceParser;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -12,8 +13,10 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -26,6 +29,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.sql.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -95,6 +99,16 @@ public class PowerFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
         ListView listView = (ListView) rootView.findViewById(R.id.listview_forecast);
         listView.setAdapter(mForecastAdapter);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
+
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l){
+                String output = mForecastAdapter.getItem(position);
+                Intent intent = new Intent(getActivity(), DetailActivity.class)
+                        .putExtra(Intent.EXTRA_TEXT, output);
+                startActivity(intent);
+            }
+        });
 
         return rootView;
     }
@@ -102,12 +116,15 @@ public class PowerFragment extends Fragment {
     public class FetchPowerTask extends AsyncTask<Object, String, Integer> {
 
         private final String LOG_TAG = FetchPowerTask.class.getSimpleName();
+        ArrayList<String> resultStr = new ArrayList<String>();
+        String[] resultString;
 
 
         @Override
         protected Integer doInBackground(Object... objects) {
             XmlPullParser receivedData = tryDownloadingXmlData();
             int recordsFound = tryParsingXmlData(receivedData);
+            Log.i(LOG_TAG, "Received data to String is: " + receivedData.toString());
             return recordsFound;
         }
 
@@ -146,6 +163,7 @@ public class PowerFragment extends Fragment {
         private int processReceivedData(XmlPullParser xmlData) throws IOException, XmlPullParserException {
             int eventType = -1;
             int recordsFound = 0;
+
 
             //Find values in the XML records
             String type = "";
@@ -209,6 +227,8 @@ public class PowerFragment extends Fragment {
             }
             Log.i(LOG_TAG, "Finished processing " + recordsFound + " records");
 
+
+
             return recordsFound;
         }
 
@@ -228,17 +248,28 @@ public class PowerFragment extends Fragment {
                 Log.i(LOG_TAG, "Type: " + type + ", IC: " + ic + ", Value: " + val + ", Percentage: " + pct + ", Data: " + data);
 
                 //Pass it to the application.
-                handleNewRecord(type, pct);
+                handleNewRecord(type, pct, val);
 
             }
+
+
+
+
             super.onProgressUpdate(values);
         }
 
-        private void handleNewRecord(String type, String pct){
-            String message = type + ": " + pct;
+        private void handleNewRecord(String type, String pct, String val){
+
+
+            String message = "Type: " + type + " - " + "Production: " + val + "MW" + " - " + "Proportion: " +  pct + "%";
+            resultStr.add(message);
+
             mForecastAdapter.clear();
-            mForecastAdapter.add(message);
-            Log.i(LOG_TAG, "This code ran" + message);
+            for(String result: resultStr){
+                mForecastAdapter.add(result);
+            }
+
+            Log.i(LOG_TAG, "This code ran" + message + "ResultString is: " + resultStr);
         }
 
 
