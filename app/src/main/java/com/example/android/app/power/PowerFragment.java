@@ -61,9 +61,7 @@ public class PowerFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item){
         int id = item.getItemId();
         if(id==R.id.action_refresh){
-            FetchPowerTask powerTask = new FetchPowerTask();
-            powerTask.execute();
-            return true;
+            updatePower();
         }
         return super.onOptionsItemSelected(item);
     }
@@ -71,30 +69,14 @@ public class PowerFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        //Create some dummy data
-        String[] data = {
-                "CCGT 32.6%",
-                "OCGT 0%",
-                "Oil 0%",
-                "Coal 2.1%",
-                "Nuclear 29.2%",
-                "PS 1.6%",
-                "Wind 21.6%",
-                "NPSHYD 1.4%",
-                "Other 4.9%",
-                "INTFR 3.2%",
-                "INTIRL 0%",
-                "INTNED 3.3%",
-                "INTEW 0%"
-        };
-        List<String> weekForecast = new ArrayList<String>(Arrays.asList(data));
 
-        //Create an array adapter to show the dummy data
+
+        //The array adapter will take data from source and use it to populate the list it is attached to.
         mForecastAdapter = new ArrayAdapter<String>(
                 getActivity(),
                 R.layout.list_item_forecast,
                 R.id.list_item_forecast_textview,
-                weekForecast);
+                new ArrayList<String>());
 
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
         ListView listView = (ListView) rootView.findViewById(R.id.listview_forecast);
@@ -111,6 +93,17 @@ public class PowerFragment extends Fragment {
         });
 
         return rootView;
+    }
+
+    private void updatePower(){
+        FetchPowerTask powerTask = new FetchPowerTask();
+        powerTask.execute();
+    }
+
+    @Override
+    public void onStart(){
+        super.onStart();
+        updatePower();
     }
 
     public class FetchPowerTask extends AsyncTask<Object, String, Integer> {
